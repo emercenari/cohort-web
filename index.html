@@ -17,6 +17,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap">
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+<script defer src="motion.js"></script>
+<script defer src="ambient.js"></script>
 <style>
   :root {
     --navy: #0B1F3A;
@@ -55,6 +60,7 @@
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    overflow-x: clip;
   }
 
   ::selection { background: var(--champagne); color: var(--navy-deep); }
@@ -110,15 +116,17 @@
     font-size: 13px; font-weight: 600; color: var(--navy-deep);
     background: var(--champagne); text-decoration: none;
     padding: 9px 18px; border-radius: 999px;
-    transition: background 0.25s var(--ease);
+    transition: background 0.16s var(--ease);
   }
   .nav-cta:hover, .nav-cta:focus-visible { background: #D8BA85; }
 
   /* ── Hero ─────────────────────────────────────── */
   .hero {
+    position: relative;
     padding: clamp(90px, 14vh, 170px) 0 clamp(70px, 10vh, 130px);
     text-align: center;
   }
+  .hero > .container { position: relative; z-index: 1; }
   .hero .caps { color: var(--champagne); margin-bottom: 34px; }
   .hero h1 {
     font-family: var(--sans);
@@ -152,9 +160,9 @@
     font-size: 15px; font-weight: 600;
     padding: 15px 30px; border-radius: 999px;
     text-decoration: none;
-    transition: background 0.25s var(--ease), border-color 0.25s var(--ease), transform 0.25s var(--ease);
+    transition: background 0.16s var(--ease), border-color 0.16s var(--ease), transform 0.16s var(--ease);
   }
-  .btn:active { transform: scale(0.98); }
+  .btn:active { transform: scale(0.97); }
   .btn-champagne { background: var(--champagne); color: var(--navy-deep); }
   .btn-champagne:hover, .btn-champagne:focus-visible { background: #D8BA85; }
   .btn-ghost {
@@ -463,7 +471,7 @@
     border-radius: 999px;
     padding: 15px 22px;
     outline: none;
-    transition: border-color 0.25s var(--ease);
+    transition: border-color 0.16s var(--ease);
   }
   .wl-form input::placeholder { color: var(--cream-mute); }
   .wl-form input:focus { border-color: var(--champagne); }
@@ -472,11 +480,11 @@
     color: var(--navy-deep); background: var(--champagne);
     border: none; border-radius: 999px;
     padding: 15px 28px; cursor: pointer;
-    transition: background 0.25s var(--ease), transform 0.25s var(--ease);
+    transition: background 0.16s var(--ease), transform 0.16s var(--ease);
     white-space: nowrap;
   }
   .wl-form button:hover, .wl-form button:focus-visible { background: #D8BA85; }
-  .wl-form button:active { transform: scale(0.98); }
+  .wl-form button:active { transform: scale(0.97); }
   .wl-note { margin-top: 18px; font-size: 13px; color: var(--cream-mute); }
   .wl-note a { color: var(--champagne); text-decoration: none; }
   .wl-note a:hover { text-decoration: underline; }
@@ -501,16 +509,54 @@
   .footer-links { display: flex; gap: 26px; flex-wrap: wrap; }
   .footer-links a {
     font-size: 13px; color: var(--cream-mute); text-decoration: none;
-    transition: color 0.25s var(--ease);
+    transition: color 0.16s var(--ease);
   }
   .footer-links a:hover, .footer-links a:focus-visible { color: var(--champagne); }
   .footer-legal { width: 100%; margin-top: 22px; font-size: 12px; color: rgba(250, 250, 247, 0.4); }
 
-  /* ── Reveal on scroll ─────────────────────────── */
-  .reveal { opacity: 0; transform: translateY(26px); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); }
-  .reveal.in { opacity: 1; transform: none; }
-  @media (prefers-reduced-motion: reduce) {
-    .reveal { opacity: 1; transform: none; transition: none; }
+  /* ── Motion (progressive enhancement) ─────────── */
+  /* The .js class is added to <html> by motion.js only when GSAP loaded
+     and prefers-reduced-motion is off. Without .js, nothing hides content
+     and the page renders fully static. */
+  .hero h1 { display: flex; flex-direction: column; } /* prevents margin collapse between masked lines */
+  .h-line { display: block; overflow: hidden; padding: 0.12em 0; margin: -0.12em 0; } /* pad + negative margin keep ascenders/descenders unclipped */
+  .h-line-inner { display: block; }
+  .js .h-line-inner { transform: translateY(135%); }
+  .js .h-dot { opacity: 0; }
+  .js .anim-hidden { opacity: 0; }
+  .js footer { overflow: clip; } /* footer parallax curtain — content slides down into place */
+
+  .js .draft-bubble.typing::after {
+    content: '';
+    display: inline-block;
+    width: 2px; height: 0.95em;
+    margin-left: 3px;
+    vertical-align: -0.15em;
+    background: var(--champagne);
+    animation: caret-blink 0.9s step-end infinite;
+  }
+  @keyframes caret-blink { 50% { opacity: 0; } }
+
+  .cursor-glow {
+    position: fixed; left: -250px; top: -250px;
+    width: 500px; height: 500px; border-radius: 50%;
+    background: radial-gradient(circle closest-side, rgba(201, 166, 107, 0.05), transparent 70%);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 40;
+    opacity: 0;
+    will-change: transform;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-champagne, .nav-cta, .wl-form button {
+      transition: background 0.16s var(--ease), transform 0.16s var(--ease), box-shadow 0.35s var(--ease);
+    }
+    .btn-champagne:hover, .btn-champagne:focus-visible,
+    .nav-cta:hover, .nav-cta:focus-visible,
+    .wl-form button:hover, .wl-form button:focus-visible {
+      box-shadow: 0 0 24px rgba(201, 166, 107, 0.35);
+    }
   }
 
   /* ── Responsive ───────────────────────────────── */
@@ -523,12 +569,134 @@
     .wl-form button { padding: 16px; }
     .footer-inner { flex-direction: column; align-items: flex-start; }
   }
+
+  /* ── Hero ambient layer (glow drift + grain; built by ambient.js) ── */
+.hero-ambient {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  /* isolate paints + stacking; nothing here affects layout */
+  contain: strict;
+}
+
+/* ── Vignette ─ a breath of deep navy toward the section edges ── */
+.hero-ambient .ha-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(
+    120% 92% at 50% 40%,
+    rgba(7, 20, 37, 0) 52%,
+    rgba(7, 20, 37, calc(var(--ha-vignette-alpha, 0.32) * 0.4)) 78%,
+    rgba(7, 20, 37, var(--ha-vignette-alpha, 0.32)) 100%
+  );
+}
+
+/* ── Champagne glows ─ "expensive paper under warm light" ─────── */
+/* Radial gradients that fade to fully transparent well before
+   their edge — no blur filter needed, so the layer rasterizes
+   once and only ever moves on the compositor. */
+.hero-ambient .ha-glow {
+  position: absolute;
+  z-index: 2;
+  border-radius: 50%;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Glow A — ~800px radius, upper left, warmest */
+.hero-ambient .ha-glow-a {
+  width: 1600px;
+  height: 1600px;
+  left: 4%;
+  top: -52%;
+  background: radial-gradient(
+    circle closest-side,
+    rgba(201, 166, 107, var(--ha-glow-alpha, 0.08)) 0%,
+    rgba(201, 166, 107, calc(var(--ha-glow-alpha, 0.08) * 0.45)) 38%,
+    rgba(201, 166, 107, 0) 72%
+  );
+  animation: ha-drift-a var(--ha-drift, 21s) ease-in-out infinite alternate;
+}
+
+/* Glow B — ~650px radius, right side, fainter, slower */
+.hero-ambient .ha-glow-b {
+  width: 1300px;
+  height: 1300px;
+  left: 58%;
+  top: -12%;
+  background: radial-gradient(
+    circle closest-side,
+    rgba(201, 166, 107, calc(var(--ha-glow-alpha, 0.08) * 0.75)) 0%,
+    rgba(201, 166, 107, calc(var(--ha-glow-alpha, 0.08) * 0.32)) 40%,
+    rgba(201, 166, 107, 0) 70%
+  );
+  animation: ha-drift-b calc(var(--ha-drift, 21s) * 1.6) ease-in-out infinite alternate;
+}
+
+/* Drift distances are deliberately tiny (≤ 90px over ~20s) —
+   the movement should be sensed, never watched. */
+@keyframes ha-drift-a {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(72px, 44px, 0); }
+}
+@keyframes ha-drift-b {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-88px, 30px, 0); }
+}
+
+/* ── Film grain ─ static, tiled, barely there ──────────────────── */
+/* background-image is set once by ambient.js (canvas → data URI).
+   No animation: grain that moves reads as TV static; grain that
+   sits still reads as paper stock. */
+.hero-ambient .ha-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background-repeat: repeat;
+  background-size: 128px 128px;
+  opacity: var(--ha-grain-opacity, 0.025);
+  mix-blend-mode: overlay;
+}
+
+/* ── Off-screen pause (ambient.js toggles this class) ──────────── */
+.hero-ambient.ha-paused .ha-glow {
+  animation-play-state: paused;
+}
+
+/* ── Reduced motion: freeze the drift, keep the finish ─────────── */
+@media (prefers-reduced-motion: reduce) {
+  .hero-ambient .ha-glow {
+    animation: none;
+  }
+}
+
+  /* ── Wordmark dot microinteraction (nav logo only) ── */
+  a.wm .dot {
+    display: inline-block;
+    will-change: transform;
+  }
+  a.wm:hover .dot,
+  a.wm:focus-visible .dot {
+    animation: wm-dot-lift 1.1s var(--ease) 1;
+  }
+  @keyframes wm-dot-lift {
+    0%   { transform: none; }
+    30%  { transform: translateY(-2px); }
+    100% { transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    a.wm:hover .dot,
+    a.wm:focus-visible .dot { animation: none; }
+  }
 </style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 
-<nav aria-label="Main">
+<nav aria-label="Main" class="anim-hidden">
   <div class="container nav-inner">
     <a class="wm" href="#" aria-label="Cohort home">cohort<span class="dot">.</span></a>
     <a class="nav-cta" href="#beta">Join the beta</a>
@@ -539,13 +707,14 @@
 
   <!-- ── Hero ── -->
   <header class="hero">
+    <div class="hero-ambient" aria-hidden="true"></div>
     <div class="container">
-      <p class="caps">For iPhone · Invite-only beta</p>
-      <h1>Never lose <em>the people who matter<span class="dot">.</span></em></h1>
-      <p>Cohort keeps your relationships warm. It notices when you've gone quiet, nudges you at the right moment, and drafts the words so you actually send them.</p>
+      <p class="caps anim-hidden">For iPhone · Invite-only beta</p>
+      <h1><span class="h-line"><span class="h-line-inner">Never lose</span></span> <em class="h-line"><span class="h-line-inner">the people who matter<span class="dot h-dot">.</span></span></em></h1>
+      <p class="anim-hidden">Cohort keeps your relationships warm. It notices when you've gone quiet, nudges you at the right moment, and drafts the words so you actually send them.</p>
       <div class="hero-ctas">
-        <a class="btn btn-champagne" href="#beta">Join the beta</a>
-        <a class="btn btn-ghost" href="#how">See how it works</a>
+        <a class="btn btn-champagne anim-hidden" href="#beta">Join the beta</a>
+        <a class="btn btn-ghost anim-hidden" href="#how">See how it works</a>
       </div>
     </div>
   </header>
@@ -558,7 +727,7 @@
       </div>
 
       <!-- 01 Import your world -->
-      <article class="chapter reveal">
+      <article class="chapter">
         <div class="chapter-copy">
           <span class="chapter-num">01</span>
           <h2>Import <em>your world<span class="dot">.</span></em></h2>
@@ -571,7 +740,7 @@
             <div class="screen">
               <div class="app-band"><span class="day">THU · JUN 17</span><span class="wm">cohort<span class="dot">.</span></span></div>
               <div class="app-title">your <em>cohort<span class="dot">.</span></em></div>
-              <div class="app-sub">3 need tending</div>
+              <div class="app-sub"><span data-count>3</span> need tending</div>
               <div class="search-pill">Search your people</div>
               <div class="sec-head">PINNED</div>
               <div class="row">
@@ -619,7 +788,7 @@
       </article>
 
       <!-- 02 Gone quiet -->
-      <article class="chapter flip reveal">
+      <article class="chapter flip">
         <div class="chapter-copy">
           <span class="chapter-num">02</span>
           <h2>We notice when you've <em>gone quiet<span class="dot">.</span></em></h2>
@@ -677,7 +846,7 @@
       </article>
 
       <!-- 03 Concierge -->
-      <article class="chapter reveal">
+      <article class="chapter">
         <div class="chapter-copy">
           <span class="chapter-num">03</span>
           <h2>We tell you <em>what to say<span class="dot">.</span></em></h2>
@@ -709,7 +878,7 @@
       </article>
 
       <!-- 04 Rhythm -->
-      <article class="chapter flip reveal">
+      <article class="chapter flip">
         <div class="chapter-copy">
           <span class="chapter-num">04</span>
           <h2>Every relationship <em>gets a rhythm<span class="dot">.</span></em></h2>
@@ -734,7 +903,7 @@
               <div class="stat-row">
                 <div class="stat"><div class="caps-s">LAST SEEN</div><div class="stat-v">4 days ago</div></div>
                 <div class="stat"><div class="caps-s">RHYTHM</div><div class="stat-v"><em>every 3 weeks</em></div></div>
-                <div class="stat"><div class="caps-s">STREAK</div><div class="stat-v">6</div></div>
+                <div class="stat"><div class="caps-s">STREAK</div><div class="stat-v" data-count>6</div></div>
               </div>
               <div class="nudge-card">
                 <div class="caps-s">UP NEXT</div>
@@ -762,7 +931,7 @@
 
   <!-- ── Founder ── -->
   <section class="founder" aria-label="A note from the founder">
-    <div class="container reveal">
+    <div class="container">
       <p class="caps">A note from the founder</p>
       <figure>
         <div class="founder-avatar" aria-hidden="true">
@@ -780,7 +949,7 @@
 
   <!-- ── Philosophy ── -->
   <section class="philosophy" aria-label="The philosophy">
-    <div class="container reveal">
+    <div class="container">
       <p class="caps">Why we built it</p>
       <h2>You can measure how well your life is going by looking at the people in it<span class="dot">.</span></h2>
       <p>Cohort exists so you never lose a person who matters, to distance or time. The AI is in service of something older than software: showing up, remembering, being the one who reaches out first. <strong>This is not an AI app. It's a life app.</strong></p>
@@ -789,7 +958,7 @@
 
   <!-- ── Waitlist ── -->
   <section class="waitlist" id="beta" aria-label="Join the beta">
-    <div class="container reveal">
+    <div class="container">
       <p class="caps">Invite-only · iOS</p>
       <h2>Save your <em>spot<span class="dot">.</span></em></h2>
       <p>Cohort is in invite-only beta on iPhone. Leave your email and your invite arrives with the next wave.</p>
@@ -857,23 +1026,6 @@
       statusEl.textContent = 'Your email app should open. If it didn’t, write to emercenari@joinbuo.com.';
     }
   });
-
-  // ── Reveal on scroll ───────────────────────────────────────────
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const revealEls = document.querySelectorAll('.reveal');
-  if (prefersReduced || !('IntersectionObserver' in window)) {
-    revealEls.forEach((el) => el.classList.add('in'));
-  } else {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in');
-          io.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-    revealEls.forEach((el) => io.observe(el));
-  }
 </script>
 </body>
 </html>
