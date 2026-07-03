@@ -1,0 +1,879 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cohort — Never lose the people who matter.</title>
+<meta name="description" content="Cohort is the iOS app that keeps your relationships warm. It notices when you've gone quiet, nudges you at the right moment, and drafts the words so you actually send them.">
+<meta property="og:title" content="Cohort — Never lose the people who matter.">
+<meta property="og:description" content="The iOS app that makes sure you never forget the people who matter. Health scores, gentle nudges, and a concierge that drafts the message for you.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://emercenari.github.io/cohort-web/">
+<meta property="og:image" content="https://emercenari.github.io/cohort-web/apple-touch-icon.png">
+<meta name="theme-color" content="#0B1F3A">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --navy: #0B1F3A;
+    --navy-deep: #071425;
+    --navy-soft: #2A3E5A;
+    --cream: #FAFAF7;
+    --cream-warm: #F3F1EC;
+    --champagne: #C9A66B;
+    --champagne-deep: #A8854B;
+    --mute: #8A9099;
+    --cream-mute: rgba(250, 250, 247, 0.62);
+    --cream-soft: rgba(250, 250, 247, 0.78);
+    --hairline-cream: rgba(250, 250, 247, 0.14);
+    --hairline-navy: rgba(11, 31, 58, 0.12);
+    --health-warm: #3F7D3A;
+    --health-warming: #C89A1E;
+    --health-cooling: #C66724;
+    --health-cold: #C4362B;
+    --serif: 'Instrument Serif', Georgia, serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--navy);
+    color: var(--cream);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection { background: var(--champagne); color: var(--navy-deep); }
+
+  .skip-link {
+    position: absolute; left: -9999px; top: 0;
+    background: var(--champagne); color: var(--navy-deep);
+    padding: 10px 18px; z-index: 100; font-weight: 600; border-radius: 0 0 10px 0;
+  }
+  .skip-link:focus { left: 0; }
+
+  /* ── Wordmark ─────────────────────────────────── */
+  .wm {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  .wm .dot { color: var(--champagne); font-weight: 700; }
+
+  .caps {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  em, .anchor {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.14em;
+    letter-spacing: -0.01em;
+  }
+
+  .container { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+
+  /* ── Nav ──────────────────────────────────────── */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(11, 31, 58, 0.86);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--hairline-cream);
+  }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .nav-inner .wm { font-size: 26px; color: var(--cream); text-decoration: none; }
+  .nav-cta {
+    font-size: 13px; font-weight: 600; color: var(--navy-deep);
+    background: var(--champagne); text-decoration: none;
+    padding: 9px 18px; border-radius: 999px;
+    transition: background 0.25s var(--ease);
+  }
+  .nav-cta:hover, .nav-cta:focus-visible { background: #D8BA85; }
+
+  /* ── Hero ─────────────────────────────────────── */
+  .hero {
+    padding: clamp(90px, 14vh, 170px) 0 clamp(70px, 10vh, 130px);
+    text-align: center;
+  }
+  .hero .caps { color: var(--champagne); margin-bottom: 34px; }
+  .hero h1 {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: clamp(42px, 7.4vw, 88px);
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+    color: var(--cream);
+    max-width: 15ch;
+    margin: 0 auto;
+  }
+  .hero h1 em {
+    display: block;
+    color: var(--cream);
+    letter-spacing: -0.015em;
+  }
+  .hero h1 .dot { color: var(--champagne); }
+  .hero p {
+    max-width: 52ch;
+    margin: 34px auto 0;
+    font-size: clamp(17px, 2vw, 20px);
+    line-height: 1.65;
+    color: var(--cream-mute);
+  }
+  .hero-ctas {
+    margin-top: 46px;
+    display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-block;
+    font-size: 15px; font-weight: 600;
+    padding: 15px 30px; border-radius: 999px;
+    text-decoration: none;
+    transition: background 0.25s var(--ease), border-color 0.25s var(--ease), transform 0.25s var(--ease);
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-champagne { background: var(--champagne); color: var(--navy-deep); }
+  .btn-champagne:hover, .btn-champagne:focus-visible { background: #D8BA85; }
+  .btn-ghost {
+    color: var(--cream); border: 1px solid rgba(250, 250, 247, 0.28);
+    background: transparent;
+  }
+  .btn-ghost:hover, .btn-ghost:focus-visible { border-color: var(--champagne); color: var(--champagne); }
+
+  /* ── Chapters ─────────────────────────────────── */
+  .chapters-head {
+    padding: clamp(50px, 8vh, 90px) 0 10px;
+    border-top: 1px solid var(--hairline-cream);
+  }
+  .chapters-head .caps { color: var(--champagne); }
+
+  .chapter {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(40px, 6vw, 96px);
+    align-items: center;
+    padding: clamp(56px, 9vh, 110px) 0;
+  }
+  .chapter + .chapter { border-top: 1px solid var(--hairline-cream); }
+  .chapter.flip .chapter-copy { order: 2; }
+  .chapter.flip .chapter-phone { order: 1; }
+
+  .chapter-num {
+    font-family: var(--serif); font-style: italic;
+    font-size: 19px; color: var(--champagne);
+    margin-bottom: 18px; display: block;
+  }
+  .chapter h2 {
+    font-family: var(--sans); font-weight: 700;
+    font-size: clamp(28px, 3.6vw, 42px);
+    line-height: 1.12; letter-spacing: -0.02em;
+    color: var(--cream);
+    max-width: 16ch;
+  }
+  .chapter h2 em { letter-spacing: -0.01em; }
+  .chapter h2 .dot { color: var(--champagne); }
+  .chapter p {
+    margin-top: 22px; color: var(--cream-mute);
+    font-size: 17px; max-width: 46ch;
+  }
+  .chapter-phone { display: flex; justify-content: center; }
+
+  /* ── Phone mockup ─────────────────────────────── */
+  .phone {
+    width: min(310px, 82vw);
+    aspect-ratio: 393 / 830;
+    background: var(--cream);
+    border-radius: 52px;
+    border: 9px solid #040d1a;
+    box-shadow:
+      0 0 0 1.5px rgba(250, 250, 247, 0.09),
+      0 32px 70px -18px rgba(0, 0, 0, 0.65),
+      0 8px 22px rgba(0, 0, 0, 0.35);
+    position: relative;
+    overflow: hidden;
+    color: var(--navy);
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+  .island {
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    width: 34%; height: 24px; background: #040d1a; border-radius: 999px;
+    z-index: 5;
+  }
+  .statusbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 26px 2px;
+    font-size: 12px; font-weight: 600; color: var(--navy);
+  }
+  .statusbar .sb-right { display: flex; gap: 4px; align-items: center; }
+  .screen { padding: 6px 18px 0; height: calc(100% - 32px); display: flex; flex-direction: column; }
+
+  .app-band {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 10px 2px 10px;
+    border-bottom: 1px solid var(--hairline-navy);
+  }
+  .app-band .day { font-size: 8.5px; font-weight: 500; letter-spacing: 0.14em; color: var(--mute); }
+  .app-band .wm { font-size: 15px; color: var(--navy); }
+
+  .app-title {
+    font-family: var(--sans); font-weight: 700;
+    font-size: 25px; letter-spacing: -0.02em;
+    color: var(--navy); margin: 18px 2px 2px;
+    line-height: 1.15;
+  }
+  .app-title em { font-size: 1.12em; }
+  .app-title .dot { color: var(--champagne); }
+  .app-sub { font-size: 10.5px; color: var(--mute); margin: 4px 2px 0; }
+
+  .search-pill {
+    margin: 14px 2px 4px;
+    background: var(--cream-warm);
+    border: 1px solid var(--hairline-navy);
+    border-radius: 999px;
+    padding: 8px 14px;
+    color: var(--mute); font-size: 11px;
+  }
+
+  .sec-head {
+    font-size: 8.5px; font-weight: 600; letter-spacing: 0.18em;
+    color: var(--mute); margin: 16px 2px 4px;
+  }
+
+  .row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 2px;
+    border-bottom: 1px solid var(--hairline-navy);
+  }
+  .row:last-of-type { border-bottom: none; }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--cream-warm);
+    color: var(--navy); font-weight: 600; font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid var(--hairline-navy);
+  }
+  .avatar.gold { background: var(--champagne); color: var(--navy-deep); border: none; }
+  .row-main { flex: 1; min-width: 0; }
+  .row-name { font-weight: 600; font-size: 12.5px; color: var(--navy); display: flex; align-items: center; gap: 5px; }
+  .row-sub { font-size: 10px; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row-note { font-family: var(--serif); font-style: italic; font-size: 11px; color: var(--navy-soft); margin-top: 1px; }
+
+  .arc { flex-shrink: 0; position: relative; width: 30px; height: 30px; }
+  .arc svg { transform: rotate(-90deg); display: block; }
+  .arc .arc-num {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; color: var(--navy);
+  }
+
+  .vbadge {
+    display: inline-flex; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--champagne); color: var(--navy-deep);
+    align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .vbadge svg { width: 7px; height: 7px; }
+  .founder-pill {
+    font-size: 7.5px; font-weight: 600; letter-spacing: 0.14em;
+    background: rgba(201, 166, 107, 0.16); color: var(--champagne-deep);
+    padding: 2px 7px; border-radius: 999px;
+  }
+
+  .tabbar {
+    margin-top: auto;
+    border-top: 1px solid var(--hairline-navy);
+    display: flex; justify-content: space-around;
+    padding: 12px 0 26px;
+  }
+  .tab { font-size: 10px; color: var(--mute); text-align: center; }
+  .tab.active { color: var(--navy); font-weight: 600; }
+  .tab::after { content: ''; display: block; width: 4px; height: 4px; margin: 3px auto 0; border-radius: 50%; }
+  .tab.active::after { background: var(--champagne); }
+
+  .back-bar { font-size: 11px; color: var(--navy-soft); margin: 14px 2px 0; }
+
+  .chips { display: flex; gap: 6px; margin: 14px 2px 6px; flex-wrap: wrap; }
+  .chip {
+    font-size: 10px; padding: 5px 12px; border-radius: 999px;
+    border: 1px solid var(--hairline-navy); color: var(--navy-soft);
+  }
+  .chip.on { background: var(--navy); color: var(--cream); border-color: var(--navy); font-weight: 600; }
+
+  .quiet-days { font-size: 9.5px; color: var(--health-cold); font-weight: 600; }
+
+  .draft-caps { font-size: 8.5px; font-weight: 600; letter-spacing: 0.2em; color: var(--mute); margin: 20px 2px 8px; }
+  .draft-bubble {
+    background: var(--navy); color: var(--cream);
+    border-radius: 18px; padding: 16px;
+    font-size: 12px; line-height: 1.55;
+    margin: 12px 2px 0;
+  }
+  .tone-pills { display: flex; gap: 6px; margin: 12px 2px 0; }
+  .tone {
+    font-size: 9px; font-weight: 600; letter-spacing: 0.06em;
+    color: var(--champagne-deep);
+    border: 1px solid rgba(201, 166, 107, 0.45);
+    padding: 4px 10px; border-radius: 999px;
+  }
+  .send-btn {
+    margin: 16px 2px 0;
+    background: var(--champagne); color: var(--navy-deep);
+    font-weight: 600; font-size: 12.5px;
+    border-radius: 12px; padding: 13px;
+    text-align: center;
+  }
+
+  .gauge-wrap { display: flex; align-items: center; gap: 16px; margin: 20px 2px 0; }
+  .gauge { position: relative; width: 92px; height: 92px; flex-shrink: 0; }
+  .gauge svg { transform: rotate(-90deg); display: block; }
+  .gauge-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .gauge-num { font-size: 26px; font-weight: 700; color: var(--navy); line-height: 1; }
+  .gauge-band { font-size: 7.5px; font-weight: 600; letter-spacing: 0.2em; color: var(--health-warm); margin-top: 3px; }
+  .gauge-name { font-weight: 700; font-size: 19px; color: var(--navy); line-height: 1.2; }
+  .gauge-name em { font-size: 1.12em; }
+  .gauge-meta { font-size: 10px; color: var(--mute); margin-top: 3px; }
+
+  .stat-row { display: flex; gap: 18px; margin: 18px 2px 0; }
+  .stat .caps-s { font-size: 7.5px; font-weight: 600; letter-spacing: 0.16em; color: var(--mute); }
+  .stat .stat-v { font-size: 14px; font-weight: 700; color: var(--navy); margin-top: 2px; }
+  .stat .stat-v em { font-size: 1.1em; }
+
+  .nudge-card {
+    background: var(--navy); color: var(--cream);
+    border-radius: 14px; padding: 14px 16px;
+    margin: 14px 2px 0;
+  }
+  .nudge-card .caps-s { font-size: 7.5px; font-weight: 600; letter-spacing: 0.2em; color: var(--champagne); }
+  .nudge-card .nudge-body { font-size: 11.5px; margin-top: 6px; line-height: 1.5; }
+  .nudge-card .nudge-body em { font-size: 1.1em; }
+  .nudge-link { font-size: 11px; font-weight: 600; color: var(--champagne-deep); margin: 12px 4px 0; }
+
+  /* ── Founder ──────────────────────────────────── */
+  .founder {
+    background: var(--navy-deep);
+    border-top: 1px solid var(--hairline-cream);
+    border-bottom: 1px solid var(--hairline-cream);
+    padding: clamp(70px, 11vh, 130px) 0;
+    text-align: center;
+  }
+  .founder .caps { color: var(--champagne); margin-bottom: 40px; }
+  .founder-avatar {
+    position: relative; width: 76px; height: 76px; margin: 0 auto 30px;
+  }
+  .founder-avatar .fa-disc {
+    width: 76px; height: 76px; border-radius: 50%;
+    background: var(--champagne); color: var(--navy-deep);
+    font-weight: 700; font-size: 24px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .founder-avatar .vbadge {
+    position: absolute; right: -2px; bottom: -2px;
+    width: 24px; height: 24px;
+    border: 3px solid var(--navy-deep);
+  }
+  .founder-avatar .vbadge svg { width: 11px; height: 11px; }
+  .founder blockquote {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(24px, 3.4vw, 36px);
+    line-height: 1.35; letter-spacing: -0.01em;
+    color: var(--cream);
+    max-width: 26ch; margin: 0 auto;
+  }
+  .founder figcaption { margin-top: 30px; }
+  .founder figcaption .f-name { font-weight: 600; font-size: 15px; color: var(--cream); }
+  .founder figcaption .f-role { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cream-mute); margin-top: 5px; }
+
+  /* ── Philosophy ───────────────────────────────── */
+  .philosophy {
+    background: var(--cream);
+    color: var(--navy);
+    padding: clamp(80px, 13vh, 160px) 0;
+  }
+  .philosophy .caps { color: var(--champagne-deep); margin-bottom: 38px; }
+  .philosophy h2 {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: clamp(30px, 4.6vw, 54px);
+    line-height: 1.22; letter-spacing: -0.015em;
+    max-width: 24ch;
+  }
+  .philosophy h2 .dot { color: var(--champagne-deep); }
+  .philosophy p {
+    margin-top: 34px; max-width: 54ch;
+    font-size: clamp(17px, 1.9vw, 19px); line-height: 1.7;
+    color: var(--navy-soft);
+  }
+  .philosophy p strong { color: var(--navy); font-weight: 600; }
+
+  /* ── Waitlist ─────────────────────────────────── */
+  .waitlist {
+    padding: clamp(80px, 13vh, 150px) 0;
+    text-align: center;
+  }
+  .waitlist .caps { color: var(--champagne); margin-bottom: 30px; }
+  .waitlist h2 {
+    font-family: var(--sans); font-weight: 700;
+    font-size: clamp(34px, 5vw, 58px);
+    letter-spacing: -0.022em; line-height: 1.1;
+    color: var(--cream);
+  }
+  .waitlist h2 em { letter-spacing: -0.01em; }
+  .waitlist h2 .dot { color: var(--champagne); }
+  .waitlist > .container > p {
+    max-width: 46ch; margin: 24px auto 0;
+    color: var(--cream-mute);
+  }
+  .wl-form {
+    margin: 42px auto 0;
+    display: flex; gap: 10px;
+    max-width: 480px;
+  }
+  .wl-form input {
+    flex: 1; min-width: 0;
+    font-family: var(--sans); font-size: 15px;
+    color: var(--cream);
+    background: rgba(250, 250, 247, 0.06);
+    border: 1px solid rgba(250, 250, 247, 0.22);
+    border-radius: 999px;
+    padding: 15px 22px;
+    outline: none;
+    transition: border-color 0.25s var(--ease);
+  }
+  .wl-form input::placeholder { color: var(--cream-mute); }
+  .wl-form input:focus { border-color: var(--champagne); }
+  .wl-form button {
+    font-family: var(--sans); font-size: 15px; font-weight: 600;
+    color: var(--navy-deep); background: var(--champagne);
+    border: none; border-radius: 999px;
+    padding: 15px 28px; cursor: pointer;
+    transition: background 0.25s var(--ease), transform 0.25s var(--ease);
+    white-space: nowrap;
+  }
+  .wl-form button:hover, .wl-form button:focus-visible { background: #D8BA85; }
+  .wl-form button:active { transform: scale(0.98); }
+  .wl-note { margin-top: 18px; font-size: 13px; color: var(--cream-mute); }
+  .wl-note a { color: var(--champagne); text-decoration: none; }
+  .wl-note a:hover { text-decoration: underline; }
+  .wl-status { margin-top: 18px; font-size: 14px; color: var(--champagne); min-height: 20px; }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+
+  /* ── Footer ───────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--hairline-cream);
+    padding: 44px 0 54px;
+  }
+  .footer-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 20px; flex-wrap: wrap;
+  }
+  footer .wm { font-size: 22px; color: var(--cream); }
+  .footer-links { display: flex; gap: 26px; flex-wrap: wrap; }
+  .footer-links a {
+    font-size: 13px; color: var(--cream-mute); text-decoration: none;
+    transition: color 0.25s var(--ease);
+  }
+  .footer-links a:hover, .footer-links a:focus-visible { color: var(--champagne); }
+  .footer-legal { width: 100%; margin-top: 22px; font-size: 12px; color: rgba(250, 250, 247, 0.4); }
+
+  /* ── Reveal on scroll ─────────────────────────── */
+  .reveal { opacity: 0; transform: translateY(26px); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease); }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+
+  /* ── Responsive ───────────────────────────────── */
+  @media (max-width: 820px) {
+    .chapter { grid-template-columns: 1fr; gap: 44px; }
+    .chapter.flip .chapter-copy { order: 1; }
+    .chapter.flip .chapter-phone { order: 2; }
+    .chapter h2, .chapter p { max-width: none; }
+    .wl-form { flex-direction: column; }
+    .wl-form button { padding: 16px; }
+    .footer-inner { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<nav aria-label="Main">
+  <div class="container nav-inner">
+    <a class="wm" href="#" aria-label="Cohort home">cohort<span class="dot">.</span></a>
+    <a class="nav-cta" href="#beta">Join the beta</a>
+  </div>
+</nav>
+
+<main id="main">
+
+  <!-- ── Hero ── -->
+  <header class="hero">
+    <div class="container">
+      <p class="caps">For iPhone · Invite-only beta</p>
+      <h1>Never lose <em>the people who matter<span class="dot">.</span></em></h1>
+      <p>Cohort keeps your relationships warm. It notices when you've gone quiet, nudges you at the right moment, and drafts the words so you actually send them.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-champagne" href="#beta">Join the beta</a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Chapters ── -->
+  <section id="how" aria-label="What Cohort does">
+    <div class="container">
+      <div class="chapters-head">
+        <p class="caps">What it does</p>
+      </div>
+
+      <!-- 01 Import your world -->
+      <article class="chapter reveal">
+        <div class="chapter-copy">
+          <span class="chapter-num">01</span>
+          <h2>Import <em>your world<span class="dot">.</span></em></h2>
+          <p>Sync Apple Contacts and Cohort builds your network in minutes. Sort people into sections: investors, founders, family, the ones you'd call at 2 a.m. No spreadsheets, no CRM homework.</p>
+        </div>
+        <div class="chapter-phone">
+          <div class="phone" role="img" aria-label="Cohort app: the network directory, showing contacts grouped by section with health scores">
+            <div class="island"></div>
+            <div class="statusbar"><span>9:41</span><span class="sb-right"><svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor" aria-hidden="true"><rect x="0" y="7" width="3" height="4" rx="0.8"/><rect x="4.5" y="5" width="3" height="6" rx="0.8"/><rect x="9" y="2.5" width="3" height="8.5" rx="0.8"/><rect x="13.5" y="0" width="3" height="11" rx="0.8"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none" aria-hidden="true"><rect x="0.5" y="0.5" width="21" height="11" rx="3" stroke="currentColor" opacity="0.5"/><rect x="2" y="2" width="16" height="8" rx="1.6" fill="currentColor"/><path d="M23 4v4a2.2 2.2 0 0 0 0-4z" fill="currentColor" opacity="0.5"/></svg></span></div>
+            <div class="screen">
+              <div class="app-band"><span class="day">THU · JUN 17</span><span class="wm">cohort<span class="dot">.</span></span></div>
+              <div class="app-title">your <em>cohort<span class="dot">.</span></em></div>
+              <div class="app-sub">3 need tending</div>
+              <div class="search-pill">Search your people</div>
+              <div class="sec-head">PINNED</div>
+              <div class="row">
+                <div class="avatar gold">EM</div>
+                <div class="row-main">
+                  <div class="row-name">Emiliano Mercenari <span class="vbadge"><svg viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M1.5 5.2 4 7.6 8.5 2.6" stroke="#071425" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+                  <div class="row-sub">Founder · Cohort</div>
+                </div>
+                <span class="founder-pill">FOUNDER</span>
+              </div>
+              <div class="sec-head">INVESTORS</div>
+              <div class="row">
+                <div class="avatar">MO</div>
+                <div class="row-main">
+                  <div class="row-name">Marcus Okafor</div>
+                  <div class="row-sub">GP · Northbound</div>
+                </div>
+                <div class="arc"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="12.5" stroke="rgba(11,31,58,0.1)" stroke-width="2.5" fill="none"/><circle cx="15" cy="15" r="12.5" stroke="#C4362B" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="78.5" stroke-dashoffset="64.4"/></svg><span class="arc-num">18</span></div>
+              </div>
+              <div class="sec-head">DESIGN</div>
+              <div class="row">
+                <div class="avatar">PR</div>
+                <div class="row-main">
+                  <div class="row-name">Priya Raman</div>
+                  <div class="row-sub">Founding designer · Tessera</div>
+                </div>
+                <div class="arc"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="12.5" stroke="rgba(11,31,58,0.1)" stroke-width="2.5" fill="none"/><circle cx="15" cy="15" r="12.5" stroke="#C4362B" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="78.5" stroke-dashoffset="69.1"/></svg><span class="arc-num">12</span></div>
+              </div>
+              <div class="row">
+                <div class="avatar">AO</div>
+                <div class="row-main">
+                  <div class="row-name">Amara Osei</div>
+                  <div class="row-sub">Design lead · Field &amp; Form</div>
+                </div>
+                <div class="arc"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="12.5" stroke="rgba(11,31,58,0.1)" stroke-width="2.5" fill="none"/><circle cx="15" cy="15" r="12.5" stroke="#3F7D3A" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="78.5" stroke-dashoffset="11"/></svg><span class="arc-num">86</span></div>
+              </div>
+              <div class="tabbar">
+                <div class="tab active">network</div>
+                <div class="tab">concierge</div>
+                <div class="tab">me</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 02 Gone quiet -->
+      <article class="chapter flip reveal">
+        <div class="chapter-copy">
+          <span class="chapter-num">02</span>
+          <h2>We notice when you've <em>gone quiet<span class="dot">.</span></em></h2>
+          <p>Every relationship carries a health score that cools with silence. When someone drifts toward cold, Cohort surfaces them before it gets awkward, not after. You'll never be the friend who vanished.</p>
+        </div>
+        <div class="chapter-phone">
+          <div class="phone" role="img" aria-label="Cohort app: the at-risk view, listing relationships that are cooling with days since last contact">
+            <div class="island"></div>
+            <div class="statusbar"><span>9:41</span><span class="sb-right"><svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor" aria-hidden="true"><rect x="0" y="7" width="3" height="4" rx="0.8"/><rect x="4.5" y="5" width="3" height="6" rx="0.8"/><rect x="9" y="2.5" width="3" height="8.5" rx="0.8"/><rect x="13.5" y="0" width="3" height="11" rx="0.8"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none" aria-hidden="true"><rect x="0.5" y="0.5" width="21" height="11" rx="3" stroke="currentColor" opacity="0.5"/><rect x="2" y="2" width="16" height="8" rx="1.6" fill="currentColor"/><path d="M23 4v4a2.2 2.2 0 0 0 0-4z" fill="currentColor" opacity="0.5"/></svg></span></div>
+            <div class="screen">
+              <div class="back-bar">← back</div>
+              <div class="app-title">at <em>risk<span class="dot">.</span></em></div>
+              <div class="chips">
+                <span class="chip on">At risk</span><span class="chip">Cold</span><span class="chip">Investors</span><span class="chip">All</span>
+              </div>
+              <div class="row">
+                <div class="avatar">PR</div>
+                <div class="row-main">
+                  <div class="row-name">Priya Raman</div>
+                  <div class="row-sub"><span class="quiet-days">201 days quiet</span> · was monthly</div>
+                  <div class="row-note">Wanted to revisit your Series A deck.</div>
+                </div>
+                <div class="arc"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="12.5" stroke="rgba(11,31,58,0.1)" stroke-width="2.5" fill="none"/><circle cx="15" cy="15" r="12.5" stroke="#C4362B" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="78.5" stroke-dashoffset="69.1"/></svg><span class="arc-num">12</span></div>
+              </div>
+              <div class="row">
+                <div class="avatar">MO</div>
+                <div class="row-main">
+                  <div class="row-name">Marcus Okafor</div>
+                  <div class="row-sub"><span class="quiet-days">92 days quiet</span> · was quarterly</div>
+                  <div class="row-note">Said come back with B2B traction. You have it.</div>
+                </div>
+                <div class="arc"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="12.5" stroke="rgba(11,31,58,0.1)" stroke-width="2.5" fill="none"/><circle cx="15" cy="15" r="12.5" stroke="#C4362B" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="78.5" stroke-dashoffset="64.4"/></svg><span class="arc-num">18</span></div>
+              </div>
+              <div class="row">
+                <div class="avatar">JL</div>
+                <div class="row-main">
+                  <div class="row-name">Jonah Lieb</div>
+                  <div class="row-sub"><span style="color:#C66724;font-weight:600;font-size:9.5px">64 days quiet</span> · was monthly</div>
+                  <div class="row-note">Owes you nothing. You owe him a call.</div>
+                </div>
+                <div class="arc"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="12.5" stroke="rgba(11,31,58,0.1)" stroke-width="2.5" fill="none"/><circle cx="15" cy="15" r="12.5" stroke="#C66724" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="78.5" stroke-dashoffset="49.5"/></svg><span class="arc-num">37</span></div>
+              </div>
+              <div class="nudge-card">
+                <div class="caps-s">TODAY'S NUDGE</div>
+                <div class="nudge-body">Priya went quiet after the deck conversation. One warm line would <em>restart it.</em></div>
+              </div>
+              <div class="tabbar">
+                <div class="tab active">network</div>
+                <div class="tab">concierge</div>
+                <div class="tab">me</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 03 Concierge -->
+      <article class="chapter reveal">
+        <div class="chapter-copy">
+          <span class="chapter-num">03</span>
+          <h2>We tell you <em>what to say<span class="dot">.</span></em></h2>
+          <p>The Concierge drafts the message in your voice: warm, brief, ready to send. Ask it anything, about anyone. It remembers what you talked about last, so you never open with "long time no see."</p>
+        </div>
+        <div class="chapter-phone">
+          <div class="phone" role="img" aria-label="Cohort app: the Concierge has drafted a message for Marcus Okafor, ready to send">
+            <div class="island"></div>
+            <div class="statusbar"><span>9:41</span><span class="sb-right"><svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor" aria-hidden="true"><rect x="0" y="7" width="3" height="4" rx="0.8"/><rect x="4.5" y="5" width="3" height="6" rx="0.8"/><rect x="9" y="2.5" width="3" height="8.5" rx="0.8"/><rect x="13.5" y="0" width="3" height="11" rx="0.8"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none" aria-hidden="true"><rect x="0.5" y="0.5" width="21" height="11" rx="3" stroke="currentColor" opacity="0.5"/><rect x="2" y="2" width="16" height="8" rx="1.6" fill="currentColor"/><path d="M23 4v4a2.2 2.2 0 0 0 0-4z" fill="currentColor" opacity="0.5"/></svg></span></div>
+            <div class="screen">
+              <div class="back-bar">← back</div>
+              <div class="draft-caps">DRAFTED FOR</div>
+              <div class="app-title" style="margin-top:0">Marcus <em>Okafor<span class="dot">.</span></em></div>
+              <div class="app-sub">GP at Northbound · 92 days since touch</div>
+              <div class="draft-bubble">Marcus, you told me to come back when we had real B2B traction. We just crossed 40 teams, and the retention curve finally looks like the one you sketched. 20 minutes this week?</div>
+              <div class="tone-pills">
+                <span class="tone">Warm</span><span class="tone">Concise</span><span class="tone">Reads Like You</span>
+              </div>
+              <div class="send-btn">Send to Marcus&nbsp;&nbsp;→</div>
+              <div class="nudge-link" style="text-align:center">Edit draft&nbsp;&nbsp;·&nbsp;&nbsp;Try another tone</div>
+              <div class="tabbar">
+                <div class="tab">network</div>
+                <div class="tab active">concierge</div>
+                <div class="tab">me</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 04 Rhythm -->
+      <article class="chapter flip reveal">
+        <div class="chapter-copy">
+          <span class="chapter-num">04</span>
+          <h2>Every relationship <em>gets a rhythm<span class="dot">.</span></em></h2>
+          <p>Set a cadence for each person: weekly, monthly, quarterly. Cohort keeps the beat, birthdays included, and your streak turns staying in touch into a habit instead of a resolution.</p>
+        </div>
+        <div class="chapter-phone">
+          <div class="phone" role="img" aria-label="Cohort app: a person profile with a health gauge, relationship rhythm, streak, and an upcoming birthday nudge">
+            <div class="island"></div>
+            <div class="statusbar"><span>9:41</span><span class="sb-right"><svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor" aria-hidden="true"><rect x="0" y="7" width="3" height="4" rx="0.8"/><rect x="4.5" y="5" width="3" height="6" rx="0.8"/><rect x="9" y="2.5" width="3" height="8.5" rx="0.8"/><rect x="13.5" y="0" width="3" height="11" rx="0.8"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none" aria-hidden="true"><rect x="0.5" y="0.5" width="21" height="11" rx="3" stroke="currentColor" opacity="0.5"/><rect x="2" y="2" width="16" height="8" rx="1.6" fill="currentColor"/><path d="M23 4v4a2.2 2.2 0 0 0 0-4z" fill="currentColor" opacity="0.5"/></svg></span></div>
+            <div class="screen">
+              <div class="back-bar">← back</div>
+              <div class="gauge-wrap">
+                <div class="gauge">
+                  <svg width="92" height="92" viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="40" stroke="rgba(11,31,58,0.1)" stroke-width="5" fill="none"/><circle cx="46" cy="46" r="40" stroke="#3F7D3A" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="251.3" stroke-dashoffset="35.2"/></svg>
+                  <div class="gauge-center"><span class="gauge-num">86</span><span class="gauge-band">WARM</span></div>
+                </div>
+                <div>
+                  <div class="gauge-name">Amara <em>Osei</em></div>
+                  <div class="gauge-meta">Design lead · Field &amp; Form</div>
+                </div>
+              </div>
+              <div class="stat-row">
+                <div class="stat"><div class="caps-s">LAST SEEN</div><div class="stat-v">4 days ago</div></div>
+                <div class="stat"><div class="caps-s">RHYTHM</div><div class="stat-v"><em>every 3 weeks</em></div></div>
+                <div class="stat"><div class="caps-s">STREAK</div><div class="stat-v">6</div></div>
+              </div>
+              <div class="nudge-card">
+                <div class="caps-s">UP NEXT</div>
+                <div class="nudge-body">Friday is Amara's birthday. She turns 34, and she mentioned <em>the pottery studio.</em></div>
+              </div>
+              <div class="nudge-link">Draft a note&nbsp;&nbsp;→</div>
+              <div class="sec-head" style="margin-top:16px">RECENT NOTES</div>
+              <div class="row">
+                <div class="row-main">
+                  <div class="row-note" style="margin-top:0">"Sent the Verena Reeves piece. Started her thinking on craft positioning."</div>
+                  <div class="row-sub" style="margin-top:3px">MAY 28</div>
+                </div>
+              </div>
+              <div class="tabbar">
+                <div class="tab active">network</div>
+                <div class="tab">concierge</div>
+                <div class="tab">me</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ── Founder ── -->
+  <section class="founder" aria-label="A note from the founder">
+    <div class="container reveal">
+      <p class="caps">A note from the founder</p>
+      <figure>
+        <div class="founder-avatar" aria-hidden="true">
+          <div class="fa-disc">EM</div>
+          <span class="vbadge"><svg viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M1.5 5.2 4 7.6 8.5 2.6" stroke="#071425" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </div>
+        <blockquote>&ldquo;Every Cohort user starts with me as their first contact. Message me anytime. I want to hear what you build with this.&rdquo;</blockquote>
+        <figcaption>
+          <div class="f-name">Emiliano Mercenari</div>
+          <div class="f-role">Founder, Cohort</div>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ── Philosophy ── -->
+  <section class="philosophy" aria-label="The philosophy">
+    <div class="container reveal">
+      <p class="caps">Why we built it</p>
+      <h2>You can measure how well your life is going by looking at the people in it<span class="dot">.</span></h2>
+      <p>Cohort exists so you never lose a person who matters, to distance or time. The AI is in service of something older than software: showing up, remembering, being the one who reaches out first. <strong>This is not an AI app. It's a life app.</strong></p>
+    </div>
+  </section>
+
+  <!-- ── Waitlist ── -->
+  <section class="waitlist" id="beta" aria-label="Join the beta">
+    <div class="container reveal">
+      <p class="caps">Invite-only · iOS</p>
+      <h2>Save your <em>spot<span class="dot">.</span></em></h2>
+      <p>Cohort is in invite-only beta on iPhone. Leave your email and your invite arrives with the next wave.</p>
+      <form class="wl-form" id="waitlist-form" novalidate>
+        <label class="sr-only" for="wl-email">Email address</label>
+        <input id="wl-email" type="email" name="email" placeholder="you@example.com" autocomplete="email" required aria-describedby="wl-status">
+        <button type="submit">Join the beta</button>
+      </form>
+      <p class="wl-status" id="wl-status" role="status" aria-live="polite"></p>
+      <p class="wl-note">Prefer email? Write to <a href="mailto:emercenari@joinbuo.com?subject=Cohort%20beta">emercenari@joinbuo.com</a></p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container footer-inner">
+    <span class="wm">cohort<span class="dot">.</span></span>
+    <div class="footer-links">
+      <a href="https://emercenari.github.io/cohort-legal/privacy/">Privacy Policy</a>
+      <a href="https://emercenari.github.io/cohort-legal/terms/">Terms of Service</a>
+      <a href="mailto:emercenari@joinbuo.com">emercenari@joinbuo.com</a>
+    </div>
+    <div class="footer-legal">&copy; 2026 Bodhi Technologies. Made for the people who matter.</div>
+  </div>
+</footer>
+
+<script>
+  // ── Waitlist form ──────────────────────────────────────────────
+  // To switch to Formspree: create a form at formspree.io and set
+  // FORMSPREE_ENDPOINT to e.g. 'https://formspree.io/f/xabc1234'.
+  // While empty, the form falls back to a prefilled mailto.
+  const FORMSPREE_ENDPOINT = '';
+
+  const form = document.getElementById('waitlist-form');
+  const statusEl = document.getElementById('wl-status');
+  const emailInput = document.getElementById('wl-email');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      statusEl.textContent = 'That email doesn’t look right. One more try?';
+      emailInput.focus();
+      return;
+    }
+    if (FORMSPREE_ENDPOINT) {
+      try {
+        statusEl.textContent = 'Saving your spot…';
+        const res = await fetch(FORMSPREE_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        if (!res.ok) throw new Error('Submission failed');
+        statusEl.textContent = 'You’re on the list. Watch your inbox.';
+        form.reset();
+      } catch {
+        statusEl.textContent = 'Something hiccuped. Email us instead: emercenari@joinbuo.com';
+      }
+    } else {
+      const subject = encodeURIComponent('Cohort beta waitlist');
+      const body = encodeURIComponent('Put me on the Cohort beta waitlist.\n\nEmail: ' + email);
+      window.location.href = 'mailto:emercenari@joinbuo.com?subject=' + subject + '&body=' + body;
+      statusEl.textContent = 'Your email app should open. If it didn’t, write to emercenari@joinbuo.com.';
+    }
+  });
+
+  // ── Reveal on scroll ───────────────────────────────────────────
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const revealEls = document.querySelectorAll('.reveal');
+  if (prefersReduced || !('IntersectionObserver' in window)) {
+    revealEls.forEach((el) => el.classList.add('in'));
+  } else {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    revealEls.forEach((el) => io.observe(el));
+  }
+</script>
+</body>
+</html>
