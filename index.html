@@ -8,11 +8,12 @@
 <meta property="og:title" content="Cohort — Never lose the people who matter.">
 <meta property="og:description" content="The iOS app that makes sure you never forget the people who matter. Health scores, gentle nudges, and a concierge that drafts the message for you.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://emercenari.github.io/cohort-web/">
-<meta property="og:image" content="https://emercenari.github.io/cohort-web/apple-touch-icon.png">
+<meta property="og:url" content="https://thecohort.app/">
+<meta property="og:image" content="https://thecohort.app/apple-touch-icon.png">
 <meta name="theme-color" content="#0B1F3A">
 <link rel="icon" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="canonical" href="https://thecohort.app/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap">
@@ -121,6 +122,10 @@
     position: relative;
     padding: clamp(90px, 14vh, 170px) 0 clamp(70px, 10vh, 130px);
     text-align: center;
+    min-height: min(92vh, 940px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
   .hero > .container { position: relative; z-index: 1; }
   .hero .caps { color: var(--champagne); margin-bottom: 34px; }
@@ -563,6 +568,15 @@
     inset: 0;
     width: 100%;
     height: 100%;
+  }
+  /* Legibility vignette — above the canvas, below the hero copy */
+  .hero-ambient::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(50% 40% at 50% 34%, rgba(7, 16, 30, 0.50), rgba(7, 16, 30, 0) 70%),
+      radial-gradient(130% 100% at 50% 50%, rgba(7, 16, 30, 0) 58%, rgba(7, 16, 30, 0.30) 100%);
   }
 
   /* ── Wordmark dot microinteraction (nav logo only) ── */
