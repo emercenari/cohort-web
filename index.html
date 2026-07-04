@@ -17,10 +17,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap">
-<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
-<script defer src="motion.js"></script>
 <script defer src="ambient.js"></script>
 <style>
   :root {
@@ -514,38 +510,15 @@
   .footer-links a:hover, .footer-links a:focus-visible { color: var(--champagne); }
   .footer-legal { width: 100%; margin-top: 22px; font-size: 12px; color: rgba(250, 250, 247, 0.4); }
 
-  /* ── Motion (progressive enhancement) ─────────── */
-  /* The .js class is added to <html> by motion.js only when GSAP loaded
-     and prefers-reduced-motion is off. Without .js, nothing hides content
-     and the page renders fully static. */
-  .hero h1 { display: flex; flex-direction: column; } /* prevents margin collapse between masked lines */
-  .h-line { display: block; overflow: hidden; padding: 0.12em 0; margin: -0.12em 0; } /* pad + negative margin keep ascenders/descenders unclipped */
-  .h-line-inner { display: block; }
-  .js .h-line-inner { transform: translateY(135%); }
-  .js .h-dot { opacity: 0; }
-  .js .anim-hidden { opacity: 0; }
-  .js footer { overflow: clip; } /* footer parallax curtain — content slides down into place */
-
-  .js .draft-bubble.typing::after {
-    content: '';
-    display: inline-block;
-    width: 2px; height: 0.95em;
-    margin-left: 3px;
-    vertical-align: -0.15em;
-    background: var(--champagne);
-    animation: caret-blink 0.9s step-end infinite;
-  }
-  @keyframes caret-blink { 50% { opacity: 0; } }
-
-  .cursor-glow {
-    position: fixed; left: -250px; top: -250px;
-    width: 500px; height: 500px; border-radius: 50%;
-    background: radial-gradient(circle closest-side, rgba(201, 166, 107, 0.05), transparent 70%);
-    mix-blend-mode: screen;
-    pointer-events: none;
-    z-index: 40;
-    opacity: 0;
-    will-change: transform;
+  /* ── Entrance (one-shot, subtle, no scroll dependency) ── */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero .container {
+      animation: hero-enter 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes hero-enter {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: none; }
+    }
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -696,7 +669,7 @@
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 
-<nav aria-label="Main" class="anim-hidden">
+<nav aria-label="Main">
   <div class="container nav-inner">
     <a class="wm" href="#" aria-label="Cohort home">cohort<span class="dot">.</span></a>
     <a class="nav-cta" href="#beta">Join the beta</a>
@@ -709,12 +682,12 @@
   <header class="hero">
     <div class="hero-ambient" aria-hidden="true"></div>
     <div class="container">
-      <p class="caps anim-hidden">For iPhone · Invite-only beta</p>
-      <h1><span class="h-line"><span class="h-line-inner">Never lose</span></span> <em class="h-line"><span class="h-line-inner">the people who matter<span class="dot h-dot">.</span></span></em></h1>
-      <p class="anim-hidden">Cohort keeps your relationships warm. It notices when you've gone quiet, nudges you at the right moment, and drafts the words so you actually send them.</p>
+      <p class="caps">For iPhone · Invite-only beta</p>
+      <h1>Never lose <em>the people who matter<span class="dot">.</span></em></h1>
+      <p>Cohort keeps your relationships warm. It notices when you've gone quiet, nudges you at the right moment, and drafts the words so you actually send them.</p>
       <div class="hero-ctas">
-        <a class="btn btn-champagne anim-hidden" href="#beta">Join the beta</a>
-        <a class="btn btn-ghost anim-hidden" href="#how">See how it works</a>
+        <a class="btn btn-champagne" href="#beta">Join the beta</a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
       </div>
     </div>
   </header>
