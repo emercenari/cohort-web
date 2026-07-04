@@ -543,108 +543,27 @@
     .footer-inner { flex-direction: column; align-items: flex-start; }
   }
 
-  /* ── Hero ambient layer (glow drift + grain; built by ambient.js) ── */
-.hero-ambient {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
-  /* isolate paints + stacking; nothing here affects layout */
-  contain: strict;
-}
-
-/* ── Vignette ─ a breath of deep navy toward the section edges ── */
-.hero-ambient .ha-vignette {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: radial-gradient(
-    120% 92% at 50% 40%,
-    rgba(7, 20, 37, 0) 52%,
-    rgba(7, 20, 37, calc(var(--ha-vignette-alpha, 0.32) * 0.4)) 78%,
-    rgba(7, 20, 37, var(--ha-vignette-alpha, 0.32)) 100%
-  );
-}
-
-/* ── Champagne glows ─ "expensive paper under warm light" ─────── */
-/* Radial gradients that fade to fully transparent well before
-   their edge — no blur filter needed, so the layer rasterizes
-   once and only ever moves on the compositor. */
-.hero-ambient .ha-glow {
-  position: absolute;
-  z-index: 2;
-  border-radius: 50%;
-  will-change: transform;
-  transform: translate3d(0, 0, 0);
-}
-
-/* Glow A — ~800px radius, upper left, warmest */
-.hero-ambient .ha-glow-a {
-  width: 1600px;
-  height: 1600px;
-  left: 4%;
-  top: -52%;
-  background: radial-gradient(
-    circle closest-side,
-    rgba(201, 166, 107, var(--ha-glow-alpha, 0.08)) 0%,
-    rgba(201, 166, 107, calc(var(--ha-glow-alpha, 0.08) * 0.45)) 38%,
-    rgba(201, 166, 107, 0) 72%
-  );
-  animation: ha-drift-a var(--ha-drift, 21s) ease-in-out infinite alternate;
-}
-
-/* Glow B — ~650px radius, right side, fainter, slower */
-.hero-ambient .ha-glow-b {
-  width: 1300px;
-  height: 1300px;
-  left: 58%;
-  top: -12%;
-  background: radial-gradient(
-    circle closest-side,
-    rgba(201, 166, 107, calc(var(--ha-glow-alpha, 0.08) * 0.75)) 0%,
-    rgba(201, 166, 107, calc(var(--ha-glow-alpha, 0.08) * 0.32)) 40%,
-    rgba(201, 166, 107, 0) 70%
-  );
-  animation: ha-drift-b calc(var(--ha-drift, 21s) * 1.6) ease-in-out infinite alternate;
-}
-
-/* Drift distances are deliberately tiny (≤ 90px over ~20s) —
-   the movement should be sensed, never watched. */
-@keyframes ha-drift-a {
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(72px, 44px, 0); }
-}
-@keyframes ha-drift-b {
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(-88px, 30px, 0); }
-}
-
-/* ── Film grain ─ static, tiled, barely there ──────────────────── */
-/* background-image is set once by ambient.js (canvas → data URI).
-   No animation: grain that moves reads as TV static; grain that
-   sits still reads as paper stock. */
-.hero-ambient .ha-grain {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  background-repeat: repeat;
-  background-size: 128px 128px;
-  opacity: var(--ha-grain-opacity, 0.025);
-  mix-blend-mode: overlay;
-}
-
-/* ── Off-screen pause (ambient.js toggles this class) ──────────── */
-.hero-ambient.ha-paused .ha-glow {
-  animation-play-state: paused;
-}
-
-/* ── Reduced motion: freeze the drift, keep the finish ─────────── */
-@media (prefers-reduced-motion: reduce) {
-  .hero-ambient .ha-glow {
-    animation: none;
+  /* ── Hero ambient layer — living network graph (ambient.js) ── */
+  .hero-ambient {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+    contain: strict;
+    /* Static base atmosphere — also the mobile / reduced-motion / no-JS fallback */
+    background:
+      radial-gradient(120% 92% at 50% 40%, rgba(7, 20, 37, 0) 52%, rgba(7, 20, 37, 0.13) 78%, rgba(7, 20, 37, 0.32) 100%),
+      radial-gradient(closest-side circle at 22% 12%, rgba(201, 166, 107, 0.075) 0%, rgba(201, 166, 107, 0.034) 38%, rgba(201, 166, 107, 0) 72%),
+      radial-gradient(closest-side circle at 78% 30%, rgba(201, 166, 107, 0.06) 0%, rgba(201, 166, 107, 0.026) 40%, rgba(201, 166, 107, 0) 70%),
+      var(--navy);
   }
-}
+  .hero-ambient canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
 
   /* ── Wordmark dot microinteraction (nav logo only) ── */
   a.wm .dot {
