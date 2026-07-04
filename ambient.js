@@ -42,8 +42,8 @@
   // th/eA/lw: edge threshold px, edge max alpha, line width.
   var RECIPE = [
     { n: 22, r0: 1.0, r1: 1.8, gMul: 3.0, gA: 0.20, cRGB: null, cA: 0,   th: 0,   eA: 0,    lw: 0,   depth: 6  },
-    { n: 20, r0: 1.6, r1: 2.6, gMul: 2.5, gA: 0.06, cRGB: CH,   cA: 0.5, th: 140, eA: 0.16, lw: 0.5, depth: 14 },
-    { n: 12, r0: 2.2, r1: 3.4, gMul: 4.0, gA: 0.10, cRGB: LT,   cA: 0.9, th: 170, eA: 0.28, lw: 0.7, depth: 26 }
+    { n: 26, r0: 1.6, r1: 2.6, gMul: 2.5, gA: 0.06, cRGB: CH,   cA: 0.5, th: 170, eA: 0.16, lw: 0.5, depth: 14 },
+    { n: 16, r0: 2.2, r1: 3.4, gMul: 4.0, gA: 0.10, cRGB: LT,   cA: 0.9, th: 210, eA: 0.28, lw: 0.7, depth: 26 }
   ];
 
   /* ── Pre-rendered glow sprites (no shadowBlur, ever) ─────────── */
