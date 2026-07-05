@@ -490,6 +490,39 @@
   .wl-note a { color: var(--champagne); text-decoration: none; }
   .wl-note a:hover { text-decoration: underline; }
   .wl-status { margin-top: 18px; font-size: 14px; color: var(--champagne); min-height: 20px; }
+  .wl-error {
+    margin: 12px auto 0; max-width: 480px;
+    font-family: var(--sans); font-size: 13px;
+    color: #E88A8A; min-height: 18px;
+    text-align: left; padding: 0 8px;
+    opacity: 0; transition: opacity 0.18s var(--ease);
+  }
+  .wl-error.is-visible { opacity: 1; }
+  .wl-confirm {
+    margin: 42px auto 0; max-width: 480px;
+    padding: 28px 30px;
+    background: rgba(201, 166, 107, 0.08);
+    border: 1px solid rgba(201, 166, 107, 0.32);
+    border-radius: 22px;
+    text-align: center;
+    opacity: 0; transform: translateY(6px);
+    animation: wl-in 0.42s var(--ease) forwards;
+  }
+  .wl-confirm .wl-confirm-head {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(24px, 3vw, 30px);
+    color: var(--cream); letter-spacing: -0.005em;
+    line-height: 1.15;
+  }
+  .wl-confirm .wl-confirm-head .dot { color: var(--champagne); }
+  .wl-confirm .wl-confirm-sub {
+    margin-top: 10px;
+    font-family: var(--sans); font-size: 14px;
+    color: var(--cream-mute);
+  }
+  @keyframes wl-in {
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   .sr-only {
     position: absolute; width: 1px; height: 1px;
@@ -868,13 +901,16 @@
       <p class="caps">Invite-only · iOS</p>
       <h2>Save your <em>spot<span class="dot">.</span></em></h2>
       <p>Cohort is in invite-only beta on iPhone. Leave your email and your invite arrives with the next wave.</p>
-      <form class="wl-form" id="waitlist-form" novalidate>
-        <label class="sr-only" for="wl-email">Email address</label>
-        <input id="wl-email" type="email" name="email" placeholder="you@example.com" autocomplete="email" required aria-describedby="wl-status">
-        <button type="submit">Join the beta</button>
-      </form>
+      <div class="wl-slot" id="wl-slot">
+        <form class="wl-form" id="beta-signup-form" novalidate>
+          <label class="sr-only" for="beta-email">Email address</label>
+          <input id="beta-email" type="email" name="email" placeholder="you@example.com" autocomplete="email" required aria-describedby="wl-status">
+          <button type="submit">Join the beta</button>
+        </form>
+        <p class="wl-error" id="wl-error" role="alert" aria-live="assertive"></p>
+      </div>
       <p class="wl-status" id="wl-status" role="status" aria-live="polite"></p>
-      <p class="wl-note">Prefer email? Write to <a href="mailto:emercenari@joinbuo.com?subject=Cohort%20beta">emercenari@joinbuo.com</a></p>
+      <p class="wl-note" id="wl-note">Prefer email? Write to <a href="mailto:emercenari@joinbuo.com?subject=Cohort%20beta">emercenari@joinbuo.com</a></p>
     </div>
   </section>
 
@@ -893,45 +929,84 @@
 </footer>
 
 <script>
-  // ── Waitlist form ──────────────────────────────────────────────
-  // To switch to Formspree: create a form at formspree.io and set
-  // FORMSPREE_ENDPOINT to e.g. 'https://formspree.io/f/xabc1234'.
-  // While empty, the form falls back to a prefilled mailto.
-  const FORMSPREE_ENDPOINT = '';
+  // ── Beta signup form ───────────────────────────────────────────
+  // Posts to a Google Apps Script webhook that appends the email
+  // to a Google Sheet. Apps Script Web Apps don't send CORS
+  // headers, so we use no-cors and treat a resolved fetch as
+  // success (the row is written server-side).
+  (function () {
+    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzZR-hIKpHlWCjevcRox6It9cp8_17Z9EIyy3WdZCl_2G94ubOfryLgxtVpMKsKK23C/exec';
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  const form = document.getElementById('waitlist-form');
-  const statusEl = document.getElementById('wl-status');
-  const emailInput = document.getElementById('wl-email');
+    const form = document.getElementById('beta-signup-form');
+    if (!form) return;
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = emailInput.value.trim();
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      statusEl.textContent = 'That email doesn’t look right. One more try?';
-      emailInput.focus();
-      return;
+    const slot = document.getElementById('wl-slot');
+    const emailInput = document.getElementById('beta-email');
+    const errorEl = document.getElementById('wl-error');
+    const noteEl = document.getElementById('wl-note');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalLabel = submitBtn.textContent;
+    let submitting = false;
+
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.classList.add('is-visible');
     }
-    if (FORMSPREE_ENDPOINT) {
-      try {
-        statusEl.textContent = 'Saving your spot…';
-        const res = await fetch(FORMSPREE_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ email }),
-        });
-        if (!res.ok) throw new Error('Submission failed');
-        statusEl.textContent = 'You’re on the list. Watch your inbox.';
-        form.reset();
-      } catch {
-        statusEl.textContent = 'Something hiccuped. Email us instead: emercenari@joinbuo.com';
+    function clearError() {
+      errorEl.textContent = '';
+      errorEl.classList.remove('is-visible');
+    }
+    function showSuccess() {
+      const confirm = document.createElement('div');
+      confirm.className = 'wl-confirm';
+      confirm.setAttribute('role', 'status');
+      confirm.setAttribute('aria-live', 'polite');
+      confirm.innerHTML =
+        '<div class="wl-confirm-head">You’re on the list<span class="dot">.</span></div>' +
+        '<div class="wl-confirm-sub">Watch your inbox — invites go out in waves.</div>';
+      slot.replaceWith(confirm);
+      if (noteEl) noteEl.style.display = 'none';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (submitting) return;
+
+      const email = emailInput.value.trim();
+      if (!email || !EMAIL_RE.test(email)) {
+        showError('Please enter a valid email.');
+        emailInput.focus();
+        return;
       }
-    } else {
-      const subject = encodeURIComponent('Cohort beta waitlist');
-      const body = encodeURIComponent('Put me on the Cohort beta waitlist.\n\nEmail: ' + email);
-      window.location.href = 'mailto:emercenari@joinbuo.com?subject=' + subject + '&body=' + body;
-      statusEl.textContent = 'Your email app should open. If it didn’t, write to emercenari@joinbuo.com.';
-    }
-  });
+
+      submitting = true;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Joining…';
+      clearError();
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, source: 'website' }),
+        });
+        // Apps Script no-cors returns an opaque response; a resolved
+        // fetch means the request made it to Google's servers.
+        showSuccess();
+      } catch (err) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalLabel;
+        showError('Something went wrong. Try again in a bit.');
+      } finally {
+        submitting = false;
+      }
+    });
+
+    // Clear inline error as soon as the user starts editing.
+    emailInput.addEventListener('input', clearError);
+  })();
 </script>
 </body>
 </html>
